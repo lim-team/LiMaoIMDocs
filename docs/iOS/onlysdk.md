@@ -1002,6 +1002,21 @@ cmd消息由服务端下发客户端解析。
 消息扩展是对现有消息字段一个补充,消息扩展分本地扩展和远程扩展，本地扩展只在当前app本地生效，卸载后重装将丢失，
 远程扩展是服务器保存，卸载后重装将恢复，本地扩展没什么好讲的，主要讲远程扩展
 
+
+#### 数据源设置
+
+```objc
+// 设置更新消息扩展的数据源， 消息远程扩展数据发生变化，sdk会调用此提供者，此提供者需要将扩展数据上传到服务器存储
+[[LIMSDK shared].chatManager setUpdateMessageExtraProvider:^(LIMMessageExtra *newExtra,LIMMessageExtra *oldExtra,callback){
+   // api请求
+   ...
+   // 回调
+   callback(error);
+}];
+
+
+```
+
 ```objc
 
 // 消息扩展类
@@ -1037,7 +1052,30 @@ cmd消息由服务端下发客户端解析。
 
 ```
 
-### 最近会话扩展
+#### 数据操作
+
+```objc
+// 更新消息远程扩展
+ [[LIMSDK shared].chatManager updateMessageRemoteExtra:message];
+```
+
+```objc
+// 收到同步扩展消息的cmd后调用同步方法进行扩展同步
+ [[LIMSDK shared].chatManager syncMessageExtra:channel];
+```
+
+#### 数据监听
+
+```objc
+
+// 当前消息扩展发送变化，会触发消息更新的委托
+// ---------- LIMChatManagerDelegate ----------
+
+-(void) onMessageUpdate:(LIMMessage*) message left:(NSInteger)left {
+    message.remoteExtra.extra
+}
+
+```
 
 ### 消息编辑
 
@@ -1136,6 +1174,15 @@ LIMMessage *messageEditAfter = [[LIMSDK shared].chatManager editMessage:(LIMMess
 
 已读未读又称为回执，由[LIMSDK shared].receiptManager 回执管理者管理
 
+
+```objc
+LIMSetting *setting = [LIMSetting new];
+setting.receiptEnabled = true // 开启端消息回执 
+[[LIMSDK shared].chatManager sendMessage:(LIMMessageContent*)content channel:(LIMChannel*)channel setting:setting]
+
+```
+
+
 #### 数据源设置
 
 ```objc
@@ -1179,10 +1226,64 @@ LIMMessage *messageEditAfter = [[LIMSDK shared].chatManager editMessage:(LIMMess
 
 ```
 
-### 附件管理
-
 ### 端对端加密
 
+```objc
+LIMSetting *setting = [LIMSetting new];
+setting.signal = true // 开启端对端加密 （目前只有个人频道才有效，群频道暂不支持）
+[[LIMSDK shared].chatManager sendMessage:(LIMMessageContent*)content channel:(LIMChannel*)channel setting:setting]
+
+```
+
 ### 会话提醒管理
+
+会话提醒目前只支持服务端下发指令，客户端同步提醒然后显示提醒，会话提醒由 [LIMSDK shared].reminderManager管理
+
+
+```objc
+@interface LIMReminder : NSObject<NSCopying>
+
+@property(nonatomic,assign) int64_t reminderID; // 提醒唯一ID
+@property(nonatomic,assign) uint64_t messageId; // 消息ID
+@property(nonatomic,assign)  uint32_t messageSeq; // 消息序列号（用户唯一，有序）
+@property(nonatomic,strong) LIMChannel *channel; // 频道
+@property(nonatomic,assign) LIMReminderType type; //  提醒类型
+
+@property(nonatomic,copy) NSString *text; // 提醒文本
+
+@property(nonatomic,strong) NSDictionary *data; //  提醒包含的数据
+ 
+@property(nonatomic,assign) BOOL isLocate; // 是否需要进行消息定位
+@property(nonatomic,assign) int64_t version;
+
+@property(nonatomic,assign) BOOL done; // 用户是否完成提醒
+
+
+...
+
+@end
+```
+
+#### 数据操作
+
+```objc
+// 同步提醒
+[[LIMSDK shared].reminderManager sync]; 
+
+// 提醒项已处理完成
+[[LIMSDK shared].reminderManager done:(NSArray<NSNumber*>*)ids]; 
+```
+#### 数据监听
+
+```objc
+
+// ---------- LIMReminderManagerDelegate ----------
+
+// 某个频道的reminders发生变化
+-(void) reminderManager:(LIMReminderManager*)manager didChange:(LIMChannel*)channel reminders:(NSArray<LIMReminder*>*) reminders {
+
+}
+
+```
 
 

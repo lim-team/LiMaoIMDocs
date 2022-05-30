@@ -12,6 +12,6 @@ group:
 
 [已有APP上集成消息UI](/i-os/sdkandui)
 
-[Demo集成上二次开发](/i-os/fulldemo)
+[Demo基础上二次开发](/i-os/fulldemo)
 
 
