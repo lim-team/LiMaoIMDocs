@@ -19,7 +19,7 @@ group:
 
 ### 说明
 
-通讯端主要负责消息的投递，频道，频道成员，频道设置的维护。
+通讯端主要负责消息的投递，频道，频道成员，频道设置的维护。（<label style="color:red">注意：通讯端的api，仅已有服务端局域网调用，请不要开放到外网，api默认端口为：18029</label>）
 
 狸猫IM默认都是集群部署，部署架构图如下：
 
@@ -54,7 +54,7 @@ services:
     command: "proxy"
     hostname: proxy
     ports:
-      - 18029:18029
+      - 18029:18029 # api端口，局域网开放，慎开放到外网访问
     volumes:
         - ./proxydata:/home/proxydata
     environment:
@@ -359,7 +359,9 @@ type MessageResp struct {
 ```
 
 
-### API文档
+### 通讯端API文档
+
+[通讯端API](/server/sdkapi)
 
 ## 部署业务端
 
