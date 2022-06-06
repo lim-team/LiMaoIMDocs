@@ -175,7 +175,7 @@ http status 200
 
 ## 频道相关API
 
-[什么是频道？](/unifying#什么是频道channel)
+[什么是频道？](/unifying.html#什么是频道channel)
 
 ### 创建或更新频道
 

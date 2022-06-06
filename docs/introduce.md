@@ -20,11 +20,11 @@ toc: menu
 
 狸猫IM做了一系例的性能压力测试工具来保证性能优异，对消息可靠性，消息有序性，消息吞吐量，消息延迟性，同时用户在线量全方位模拟压测。
 
-详情查看 [压力测试](/introduce#压力测试)
+详情查看 [压力测试](/introduce.html#压力测试)
 
 **安全性**
 
-狸猫IM是国内唯一采用[端对端加密](/unifying#什么是端对端加密)提供私有化部署的厂商，采用国际通用的端对端加密算法signal（telegram，WhatsApp,Facebook等国外知名聊天软件都是采用的此加密技术）目前还无人能破解此算法
+狸猫IM是国内唯一采用[端对端加密](/unifying.html#什么是端对端加密)提供私有化部署的厂商，采用国际通用的端对端加密算法signal（telegram，WhatsApp,Facebook等国外知名聊天软件都是采用的此加密技术）目前还无人能破解此算法
 
 **专业性**
 
@@ -72,3 +72,22 @@ toc: menu
 
 运维端：给运维人员使用，可对各个系统进行全方位的监控。
 
+
+## Demo体验
+
+### iOS下载
+
+![iOS下载](./images/iphone_download_qr.png)
+
+### Android下载
+
+![Android下载](./images/android_download_qr.png)
+
+
+### Web
+
+https://im.limaoim.cn
+
+## 联系方式
+
+下载注册我们的Demo 然后联系客服

@@ -26,6 +26,7 @@ group:
 ![狸猫IM部署架构](./limaoim.png)
 
 
+
 ### docker部署
 
 #### 安装docker-compose
@@ -361,20 +362,4 @@ type MessageResp struct {
 
 ### 通讯端API文档
 
-[通讯端API](/server/sdkapi)
-
-## 部署业务端
-
-### docker部署
-
-### 二进制部署
-
-### 配置说明
-
-## 部署Web端
-
-### docker部署
-
-### 二进制部署
-
-### 配置说明
+[通讯端API](/server/sdkapi.html)
