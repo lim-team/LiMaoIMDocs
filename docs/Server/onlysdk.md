@@ -27,7 +27,19 @@ group:
 
 
 
-### docker部署
+### Docker部署(推荐)
+
+
+#### Docker安装
+
+
+[ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+
+[centos](https://docs.docker.com/engine/install/centos/)
+
+[debian](https://docs.docker.com/engine/install/debian/)
+
+[其他系统](https://docs.docker.com/engine/install/)
 
 #### 安装docker-compose
 
@@ -38,7 +50,39 @@ group:
 
 ```
 
-#### 部署狸猫IM
+#### 单机部署
+
+新建文件 docker-compose.yaml 复制如下内容
+
+```yaml
+version: '3.7'
+services:
+  limao1:
+    image: limaoim/limaoim:latest
+    restart: always
+    hostname: limaoim
+    networks:
+      - "limao"
+    volumes:
+      - ./limaodata:/home/limaodata
+    environment:
+      appID: limaodemo  # 测试使用，正式的请找官方购买
+      appKey: 8sTRZCZgPV2v6QZG # 测试使用，正式的请找官方购买
+      dataDir: "/home/limaodata" # 数据目录
+      mode: "debug" # 模式 debug 测试 release 正式 bench 压力测试
+      externalIP: "" #  外网IP 如果没配置将通过ifconfig.io获取,如果通过ifconfig.io获取注意当前机器是否能访问到ifconfig.io
+      # webhook: "http://xxxx/v2/webhook" # webhook 见webhook章节
+      # datasource: "http://xxxx/v1/datasource" # 数据源 见数据源章节 （非必需）
+    ports:
+      - 7677:7677  # tcp连接端口
+      - 2122:2122  # websocket连接端口
+      - 1516:1516  # 内部api地址
+networks:
+  limao:
+
+```
+
+#### 分布式部署
 
 1. 新建文件 docker-compose.yaml
 
@@ -54,6 +98,8 @@ services:
     restart: always
     command: "proxy"
     hostname: proxy
+    networks:
+      - "limao"
     ports:
       - 18029:18029 # api端口，局域网开放，慎开放到外网访问
     volumes:
@@ -70,7 +116,8 @@ services:
       nodeID: 1   # 节点编号 范围 1-1024
       appID: limaodemo  # 测试使用，正式的请找官方购买
       appKey: 8sTRZCZgPV2v6QZG # 测试使用，正式的请找官方购买
-      mode: "debug"  # 模式
+      mode: "debug"  # 模式 debug 测试 release 正式 bench 压力测试
+      externalIP: "" #  外网IP 如果没配置将通过ifconfig.io获取,如果通过ifconfig.io获取注意当前机器是否能访问到ifconfig.io
       proxy: "proxy:16666"
       nodeRaftAddr: "limao1:6000"
       nodeRPCAddr: "limao1:6001"
@@ -87,13 +134,15 @@ services:
     image: limaoim/limaoim:latest
     restart: always
     hostname: limaoim
+    networks:
+      - "limao"
     volumes:
       - ./limaodata-2:/home/limaodata-2
     environment:
       nodeID: 2   # 节点编号 范围 1-1024
       appID: limaodemo  # 测试使用，正式的请找官方购买
       appKey: 8sTRZCZgPV2v6QZG # 测试使用，正式的请找官方购买
-      mode: "debug"  # 模式
+      mode: "debug"  # 模式 debug 测试 release 正式 bench 压力测试
       proxy: "proxy:16666"
       nodeRaftAddr: "limao2:6000"
       nodeRPCAddr: "limao2:6001"
@@ -106,6 +155,8 @@ services:
     ports:
       - 7677:7677  # tcp连接端口
       - 2122:2122  # websocket连接端口
+networks:
+  limao:    
 
 ```
 
@@ -162,7 +213,83 @@ services:
 
 ### 二进制部署
 
-待完善
+#### 单机
+
+```
+# ./limaoim -e appID=limaodemo -e appKey=xxxx -e mode=debug
+```
+
+### 分布式
+
+
+节点初始化
+
+```
+// 开启proxy服务
+# ./limaoim proxy -c ./configs/proxy.toml  -e replica=1
+```
+
+
+```
+// 初始化的节点启动
+# ./limaoim -e proxy=xx.xx.xx.xx:16666 -e nodeID=1001 -e nodeRaftAddr=127.0.0.1:6666
+```
+
+```
+// 初始化的节点启动
+# ./limaoim  -e proxy=xx.xx.xx.xx:16666 -e nodeID=1002 -e nodeRaftAddr=127.0.0.1:6667
+```
+
+增加节点
+
+```
+# ./limaoim  -e proxy=xx.xx.xx.xx:16666 -e nodeID=1003 -join
+```
+
+移除节点
+
+```
+# ./limaoim -e nodeID=1003 -remove
+```
+
+
+### 配置说明
+
+参数 | 说明 | 适用
+---|--- |---
+appID | 应用ID（向官方申请） | 所有
+appKey | 应用key（向官方申请） | 所有
+addr | tcp监听地址 默认：tcp://0.0.0.0:7677 | 所有
+wsAddr | websocket监听地址 默认：0.0.0.0:2122 | 所有
+httpAddr | http api的监听地址 默认为 0.0.0.0:1516 | 所有
+dataDir | 数据保存目录 | 所有
+monitorOn | 监控开关 0.关闭 1.开启 | 所有
+datasource | 数据源地址用户对接第三方系统，见数据源章节 | 所有
+webhook | webhook 通过此地址通知数据给第三方 格式为 http://xxxxx | 所有
+webhook_grpc | webhook的grpc地址 如果此地址有值 则不会再调用webhook配置的地址，将走grpc模式通知第三方,格式为 ip:port | 所有
+messageNotifyMaxCount | 每次webhook推送消息数量限制 默认一次请求最多推送100条 | 所有
+messageNotifyScanInterval | 消息推送间隔 默认500毫秒发起一次推送 | 所有
+maxMessagePerSecond | 服务器每秒最大消息处理数量 默认为100000，限流 | 所有
+conversationOfUserMaxCount | 每个用户最大最近会话数量 默认为500 | 所有
+wssOn | 是否开启websocket的wss 1.开启 0. 关闭 默认为0 | 所有
+wssCertificate | websocket的ssl证书的路径 （开启ssl必须要配置）| 所有
+wssCertificateKey | websocket的ssl证书key的路径 （开启ssl必须要配置） | 所有
+externalIP | 外网IP 如果没配置将通过ifconfig.io获取，没配置请确定本机能访问到ifconfig.io | 所有
+mode | 模式 debug 测试 release 正式 bench 压力测试 | 所有
+segmentMaxBytes | 每个消息数据日志段的最大大小 默认为20G | 所有
+eventPoolSize |  事件协程池大小,此池主要处理im的一些通知事件 比如webhook，上下线等等 默认为10240| 所有
+messagePoolSize | 消息协程池大小，此池的协程主要用来处理消息相关的逻辑 默认大小为 102400 | 所有
+deliveryMsgPoolSize | 投递消息协程池大小，此池的协程主要用来将消息投递给在线用户 默认大小为 102400 | 所有
+nodeID | 节点的唯一ID（1-1024之间） | 分布式
+proxy |proxy服务器通讯地址 格式：ip:port 如果配置了此参数将开启分布式 | 分布式
+nodeRaftAddr |分布式集群节点选举通信地址 IP:PORT 比如：127.0.0.1:6000 默认系统自动填充 | 分布式
+nodeRaftAddrReal | 节点之间能通信的真实局域网地址 比如：192.168.1.12:6000，在docker环境下nodeRaftAddr获取的地址可能不是真正的局域网地址，可以通过nodeRaftAddrReal指定真正内网通信地址 默认系统自动填充 | 分布式
+nodeAPIAddr | 节点间调用的API地址 例如: http://127.0.0.1:1516 默认系统自动填充 | 分布式
+nodeRPCAddr | 节点grpc通讯地址，主要用来转发消息 (监听地址) 例如： 127.0.0.1:6001 默认系统自动填充 | 分布式
+nodeRPCAddrReal | 真实的rpc通信地址，节点之间能访问到（局域网地址）默认系统自动填充 | 分布式
+nodeTCPAddr | 节点的TCP地址 对外公开，提供给APP端长连接通讯  格式： ip:port，默认系统自动填充 | 分布式
+nodeWSAddr | 节点的wsAdd地址 对外公开 提供给WEB端长连接通讯 格式： ip:port ，默认系统自动填充| 分布式
+slotCount |  slot（数据分区）数量 默认为256 谨慎更改 | 分布式
 
 ### webhook
 
