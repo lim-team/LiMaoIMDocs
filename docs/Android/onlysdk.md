@@ -10,7 +10,7 @@ group:
 
 ### 设计理念
 
-为了让开发者更快更方便的使用 SDK，狸猫 SDK 提供了一个唯一的入口来访问 SDK 中的所有功能。就像书籍的目录一样可以通过目录查找对应的内容。如连接 IM **LiMaoIM.getInstance().getLiMConnectionManager().connection()**
+为了让开发者更快更方便的使用 SDK，狸猫 SDK 提供了一个唯一的入口来访问 SDK 中的所有功能。就像书籍的目录一样可以通过目录查找对应的内容。如连接 IM `LiMaoIM.getInstance().getLiMConnectionManager().connection()`
 
 ### 架构介绍
 
@@ -103,9 +103,12 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMs
 在 Application 的 onCreate 方法中初始化 SDK
 
 ```java
-// context :上下文一般给Application
-// uid :登录用户ID（业务服务端在IM通讯端登记了的uid））
-// token :登录用户token（业务服务端在IM通讯端登记了的token）
+ /**
+  * 初始化SDK
+  * @param context 上下文一般给Application
+  * @param uid 登录用户ID（业务服务端在IM通讯端登记了的uid））
+  * @param token 登录用户token（业务服务端在IM通讯端登记了的token）
+  */
 LiMaoIM.getInstance().initIM(context, uid, token);
 ```
 
@@ -154,8 +157,7 @@ LiMaoIM.getInstance().getLiMConnectionManager().disconnect(isLogout);
 
 ```java
 /**
- 发送消息 (发送并保存消息)
-
+ * 发送消息 (发送并保存消息)
  @param liMMessageContent 消息正文
  @param channelID 投递的频道ID（个人频道，群频道，客服频道等等）
  @param channelType 投递的频道类型（个人频道，群频道，客服频道等等）
@@ -196,6 +198,8 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("key", new INewMsgL
 ```
 
 ##### 刷新消息监听
+
+在 sdk 更新过消息时，如：消息发送状态，有人点赞消息，消息已读回执，消息撤回等，sdk 都将回掉以下事件。
 
 ```java
  LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRefreshMsg() {
@@ -581,7 +585,9 @@ public LiMMessageContent decodeMsg(JSONObject jsonObject) {
 }
 ```
 
-- <font color='#999' size=2>解码和编码消息时无需将 `type` 字段考虑其中，sdk 内部会自动处理</font> 如果您想控制该自定义消息在获取时显示的内容可重写 `getDisplayContent` 方法
+- <font color='#999' size=2>解码和编码消息时无需将 `type` 字段考虑其中，sdk 内部会自动处理</font>
+
+如果您想控制该自定义消息在获取时显示的内容可重写 `getDisplayContent` 方法
 
 ```java
 @Override
@@ -596,7 +602,7 @@ public String getDisplayContent() {
 LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMCardContent.class);
 ```
 
-对此通过这三自定义普通消息就已完成
+对此通过这三步自定义普通消息就已完成
 
 ### 自定义附件消息
 
@@ -628,7 +634,7 @@ public class LiMLocationContent extends LiMMediaMessageContent {
 
 ##### 第二步 编码和解码
 
-我们需要将`longitude`,`latitude`,`address`,`url`信息发送给对方，最终传递的消息内容为 {"type":6,"longitude":115.25,"latitude":39.26,"address":xxx,img:xxx}
+我们需要将`longitude`,`latitude`,`address`,`url`信息发送给对方，最终传递的消息内容为 {"type":6,"longitude":115.25,"latitude":39.26,"address":xxx,url:xxx}
 
 重写`LiMMessageContent`的`encodeMsg`方法开始编码
 
@@ -640,7 +646,7 @@ public class LiMLocationContent extends LiMMediaMessageContent {
           jsonObject.put("address", address);
           jsonObject.put("latitude", latitude);
           jsonObject.put("longitude", longitude);
-          jsonObject.put("url", url);
+          jsonObject.put("url", url); // 位置截图
           jsonObject.put("localPath", localPath);
       } catch (JSONException e) {
           e.printStackTrace();
@@ -700,7 +706,7 @@ LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.c
 
 ##### 附件下载
 
-sdk 中不会主动下载消息的附件。在收到带有附件的消息时需要 app 自己按需下载。在 app 下砸完成后需更改文件本地地址，避免重复下载
+sdk 中不会主动下载消息的附件。在收到带有附件的消息时需要 app 自己按需下载。在 app 下载完成后需更改文件本地地址，避免重复下载
 
 ```java
 /**
@@ -714,7 +720,7 @@ LiMaoIM.getInstance().getLiMMsgManager().updateContent(String clientMsgNo, LiMMe
 
 ### 消息扩展
 
-随着业务的发展应用在聊天中的功能也日见增多，为了满足绝大部分的需求 狸猫 IM 中增加了消息扩展功能。消息扩展分`本地扩展`和`远程扩展`，本地扩展只针对 app 本地使用卸载 app 后将丢失，远程扩展是服务器保存卸载重装后数据将恢复
+随着业务的发展应用在聊天中的功能也日益增多，为了满足绝大部分的需求 狸猫 IM 中增加了消息扩展功能。消息扩展分`本地扩展`和`远程扩展`，本地扩展只针对 app 本地使用卸载 app 后将丢失，远程扩展是服务器保存卸载重装后数据将恢复
 
 ##### 本地扩展
 
