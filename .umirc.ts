@@ -6,6 +6,10 @@ export default defineConfig({
     '/images/logo.png',
   logo: '/images/logo.png',
   outputPath: 'docs-dist',
+  hash: true,
+  exportStatic: {
+    htmlSuffix: true,
+  },
   locales: [
     ['zh-CN', '中文'],
     ['en-US', 'English'],

@@ -96,7 +96,7 @@ pod 'LiMaoIMSDK'
 
 ## 基础使用
 
-使用之前需要明白[什么是频道](/unifying#什么是频道)
+使用之前需要明白[什么是频道](/unifying.html#什么是频道)
 
 ### 初始化
 
@@ -340,7 +340,7 @@ LIMConversation类的核心属性
  @param limit 消息数量限制
  @param complete 查询回调
  */
-[[LIMSDK shared].conversationManager pullLastMessages:(LIMChannel*)channel limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
+[[LIMSDK shared].chatManager pullLastMessages:(LIMChannel*)channel limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
 
  /**
   下拉加载消息
@@ -349,7 +349,7 @@ LIMConversation类的核心属性
  @param limit 消息数量限制
  @param complete 查询回调
  */
-[[LIMSDK shared].conversationManager pullDown:(LIMChannel*)channel startOrderSeq:(uint32_t)startOrderSeq limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
+[[LIMSDK shared].chatManager pullDown:(LIMChannel*)channel startOrderSeq:(uint32_t)startOrderSeq limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
 
 /**
  上拉加载消息
@@ -357,14 +357,14 @@ LIMConversation类的核心属性
  @param limit 消息数量限制
  @param complete 查询回调
  */
-[[LIMSDK shared].conversationManager pullUp:(LIMChannel*)channel startOrderSeq:(uint32_t)startOrderSeq limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
+[[LIMSDK shared].chatManager pullUp:(LIMChannel*)channel startOrderSeq:(uint32_t)startOrderSeq limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
 
 /**
  查询指定orderSeq周围的消息 上5条下5条 ，比如 orderSeq 为 20 则查询 16 17 18 19 20 21 22 23 24 25 主要使用在定位消息
  @param channel 频道
  @param orderSeq 以此OrderSeq查询周围的消息
  */
-[[LIMSDK shared].conversationManager pullAround:(LIMChannel*)channel orderSeq:(uint32_t)orderSeq  limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
+[[LIMSDK shared].chatManager pullAround:(LIMChannel*)channel orderSeq:(uint32_t)orderSeq  limit:(int)limit complete:(void(^)(NSArray<LIMMessage*> *messages,NSError *error))complete];
 
 
 ```
@@ -619,6 +619,8 @@ cmd消息由服务端下发客户端解析。
 ```
 
 ### 频道管理(置顶,免打扰等等)
+
+[什么是频道](/unifying.html#什么是频道channel)
 
 频道是狸猫IM里比较重要的一个抽象概念，发送消息都是先发送给频道，频道根据自己的配置规则进行投递消息，频道分频道和频道详情
 
@@ -1133,7 +1135,7 @@ LIMMessage *messageEditAfter = [[LIMSDK shared].chatManager editMessage:(LIMMess
 
 ### 消息回应(点赞)
 
-如果你不理解消息回应请查看[什么是消息回应](/unifying#什么是消息回应)
+如果你不理解消息回应请查看[什么是消息回应](/unifying.html#什么是消息回应)
 
 #### 操作数据
 

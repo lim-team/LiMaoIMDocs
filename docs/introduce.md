@@ -20,11 +20,11 @@ toc: menu
 
 狸猫IM做了一系例的性能压力测试工具来保证性能优异，对消息可靠性，消息有序性，消息吞吐量，消息延迟性，同时用户在线量全方位模拟压测。
 
-详情查看 [压力测试](/introduce#压力测试)
+详情查看 [压力测试](/introduce.html#压力测试)
 
 **安全性**
 
-狸猫IM是国内唯一采用[端对端加密](/unifying#什么是端对端加密)提供私有化部署的厂商，采用国际通用的端对端加密算法signal（telegram，WhatsApp,Facebook等国外知名聊天软件都是采用的此加密技术）目前还无人能破解此算法
+狸猫IM是国内唯一采用[端对端加密](/unifying.html#什么是端对端加密)提供私有化部署的厂商，采用国际通用的端对端加密算法signal（telegram，WhatsApp,Facebook等国外知名聊天软件都是采用的此加密技术）目前还无人能破解此算法
 
 **专业性**
 
@@ -56,9 +56,68 @@ toc: menu
 
 ## 压力测试
 
-主要测试指标：消息可靠性，消息有序性，消息吞吐量，消息延迟性，同时用户在线量
+主要测试指标：同时用户在线量,消息可靠性，消息有序性，大量离线消息收取，
 
-待完善
+**同时用户在线量**
+
+测试一百万用户同时在线, 20台压测机，一台im服务器，每台压测机器模拟5万用户在线
+
+im服务器配置： 	12 vCPU 24 GiB 
+
+压测机： 8 vCPU 16 GiB
+
+<img src="/images/aliyun.png"/>
+
+20台机器模拟客户端在线，一台机器模拟5万
+
+<video width="960"  controls>
+  <source src="/video/stress.mp4" type="video/mp4">
+    您的浏览器不支持Video标签。
+</video>
+
+100万连接后，im服务器 内存，cpu使用情况如下
+
+<img src="/images/stress_result.png"/>
+
+阿里云的监控图如下：
+
+<img src="/images/aliyun_monitor.png"/>
+
+结论： 100万同时在线持续两个小时，内存使用不超过7G，cpu在 25%以下
+
+
+**消息可靠性**
+
+ 100个用户每个用户发送100个消息，重复许多次消息不丢。
+
+<video width="320"  controls>
+  <source src="/video/reliability.mp4" type="video/mp4">
+    您的浏览器不支持Video标签。
+</video>
+
+
+**消息有序性**
+
+2个用户每个用户快速发送1万条消息，观察序号是否有序，如果程序这么快的速度都没有乱序，真实发消息场景下就更加不可能乱序
+
+<video width="320"  controls>
+  <source src="/video/orderliness.mp4" type="video/mp4">
+    您的浏览器不支持Video标签。
+</video>
+
+
+**大量离线消息收取**
+
+100个用户 每个用户发送1000条消息。测试离线收取速度，结果：秒级收取速度
+
+<video width="320"  controls>
+  <source src="/video/offline.mp4" type="video/mp4">
+    您的浏览器不支持Video标签。
+</video>
+
+
+
+
 
 ## 狸猫IM的组成
 
@@ -72,3 +131,22 @@ toc: menu
 
 运维端：给运维人员使用，可对各个系统进行全方位的监控。
 
+
+## Demo体验
+
+### iOS下载
+
+![iOS下载](./images/iphone_download_qr.png)
+
+### Android下载
+
+![Android下载](./images/android_download_qr.png)
+
+
+### Web
+
+https://im.limaoim.cn
+
+## 联系方式
+
+下载注册我们的Demo 然后联系客服
