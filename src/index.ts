@@ -5,3 +5,4 @@ import Prism from 'prism-react-renderer/prism';
 
 require('prismjs/components/prism-go');
 require('prismjs/components/prism-objectivec');
+require('prismjs/components/prism-java');
