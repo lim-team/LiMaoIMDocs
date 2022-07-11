@@ -757,7 +757,7 @@ LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChanne
 
 当我们给对方发送消息发现发送内容有错误时，这时无需撤回重发只需要将消息编辑即可
 
-<video controls height='30%' width='30%' src="http://49.235.106.135:9000/chat/1/b75562b6d5be44b6904c4bee0a4aa2e6/1654238404468.mp4"></video>
+<video controls height='30%' width='30%' src="/video/msgedit.mp4"></video>
 
 ##### 设置编辑内容
 
@@ -949,4 +949,20 @@ LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", ne
                 // 新提醒
             }
         })
+```
+
+### 混淆
+
+```java
+正式包开启混淆
+1、app 模块下 添加
+  jniDebuggable true
+  zipAlignEnabled true
+  minifyEnabled true
+  shrinkResources true  // 是否去除无效的资源文件
+   proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+2、在混淆文件中 添加以下代码
+-keep class com.xinbida.limaoim.**{*;}
+-keep class com.xinbida.limaoim.entity.** { *; }
 ```
