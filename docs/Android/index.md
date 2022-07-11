@@ -10,8 +10,8 @@ group:
 
 您可以选择以下集成方式：
 
-[已有 APP 集成 SDK](./onlysdk.md)
+[已有 APP 集成 SDK](./android/onlysdk.html)
 
-[已有 APP 集成消息 UI](./sdkandui.md)
+[已有 APP 集成消息 UI](./android/sdkandui.html)
 
-[Demo 基础上二次开发](./fulldemo.md)
+[Demo 基础上二次开发](./android/fulldemo.html)
