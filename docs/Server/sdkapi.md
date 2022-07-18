@@ -648,8 +648,8 @@ POST /conversation/sync
 ```json
 {
   "uid": "xxxx", // 当前登录用户uid
-  "version": 1234, //  当前客户端的会话最大版本号(如果本地没有数据则传0)
-  "last_msg_seqs": "xxx:2:123|xxx:1:3434", //   客户端所有频道会话的最后一条消息序列号拼接出来的同步串 格式： channelID:channelType:last_msg_seq|channelID:channelType:last_msg_seq
+  "version": 1234, //  当前客户端的会话最大版本号(从保存的结果里取最大的version，如果本地没有数据则传0)，
+  "last_msg_seqs": "xxx:2:123|xxx:1:3434", //   客户端所有频道会话的最后一条消息序列号拼接出来的同步串 格式： channelID:channelType:last_msg_seq|channelID:channelType:last_msg_seq 
   "msg_count": 20 // 每个会话获取最大的消息数量，一般为app点进去第一屏的数据
 }
 ```
@@ -662,10 +662,10 @@ http status 200
 
 [
   {
-    "channel_id": "xxxx", // 频道ID
-    "channel_type": 2, // 频道类型
+    "channel_id": "xxxx111", // 频道ID
+    "channel_type": 2, // 频道类型 1.单聊 2.群聊 3.客服
     "unread": 1, // 消息未读数量
-    "timestamp": 4523485721, // 10位到秒的时间戳
+    "timestamp": 1657615272, // 10位到秒的时间戳
     "last_msg_seq": 0, // 最后一条消息的message_seq
     "last_client_msg_no": "xxxx", // 最后一条消息的客户端编号
     "version": 123, // 数据版本编号
@@ -678,15 +678,20 @@ http status 200
             },
             "setting": 0, // 消息设置 消息设置是一个 uint8的数字类型 为1个字节，完全由第三方自定义 比如定义第8位为已读未读回执标记，开启则为0000 0001 = 1
             "message_id": 122323343445, // 消息全局唯一ID
-            "client_msg_no": "xxxxx", // 客户端消息编号，可用此字段去重
-            "message_seq": 1, // 消息序列号 （用户唯一，有序递增）
+            "client_msg_no": "xxxxx", // 客户端定义的消息编号(一般为32位的uuid)，可用此字段去重
+            "message_seq": 1, // 消息序列号 （频道唯一，有序递增）
             "from_uid": "xxxx", // 发送者用户id
             "channel_id": "xxxx", // 频道ID
             "channel_type": 2, // 频道类型 1.个人频道 2.群频道
-            "timestamp": 1223434512, // 消息10位到秒的时间戳
+            "timestamp": 1657611272, // 消息10位到秒的时间戳
             "payload": "xxxx", // base64编码的消息内容 
         },
     ]
+  },
+  {
+    "channel_id": "xxxx222", // 频道ID
+    "channel_type": 1, // 频道类型  1.单聊 2.群聊 3.客服
+    ...
   }
 ]
 
