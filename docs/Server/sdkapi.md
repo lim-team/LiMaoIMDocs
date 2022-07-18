@@ -660,7 +660,8 @@ http status 200
 
 ```json
 
-{
+[
+  {
     "channel_id": "xxxx", // 频道ID
     "channel_type": 2, // 频道类型
     "unread": 1, // 消息未读数量
@@ -686,7 +687,8 @@ http status 200
             "payload": "xxxx", // base64编码的消息内容 
         },
     ]
-}
+  }
+]
 
 ```
 
