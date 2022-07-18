@@ -951,6 +951,29 @@ LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", ne
         })
 ```
 
+### 状态码
+
+#### 登录返回返回状态码
+
+连接 IM 后会返回连接状态，连接状态可通过`LiMConnectStatus`查看。具体状态码如下
+
+```java
+0：失败
+1：成功
+2：被踢或认证失败
+3：同步消息中
+4：连接中
+5：网络异常
+```
+
+- <font color='#999' size=2>当返回状态码为 2，监听连接状态`reason` 为`ReasonConnectKick`时表示被踢（其他设备登录），`reason`为`ReasonAuthFail`表示认证失败（token 不对）</font>
+
+### 资源下载
+
+<a href="/resource/LiMAndroidClientDemo.zip" target="_blank">demo 下载</a>
+
+<a href="/resource/limaoim-release.aar" target="_blank">aar 下载</a>
+
 ### 混淆
 
 ```java
