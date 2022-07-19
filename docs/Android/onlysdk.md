@@ -105,7 +105,9 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMs
 
 ## 基础使用
 
-使用之前需要明白[什么是频道](/unifying#什么是频道)
+使用之前需要明白[什么是频道](/unifying.html#什么是频道channel)
+
+事件监听说明[事件监听](/android/onlysdk.html#说明)
 
 ### 初始化
 
@@ -147,7 +149,7 @@ LiMaoIM.getInstance().getLiMConnectionManager().connection();
 LiMaoIM.getInstance().getLiMConnectionManager().disconnect(isLogout);
 ```
 
-##### 连接监听
+##### 连接状态监听
 
 ```java
  LiMaoIM.getInstance().getLiMConnectionManager().addOnConnectionStatusListener("key", new IConnectionStatus() {
@@ -159,6 +161,8 @@ LiMaoIM.getInstance().getLiMConnectionManager().disconnect(isLogout);
             }
         });
 ```
+
+- <font color='#999' size=2>更多连接状态请查看[状态码](/android/onlysdk.html#状态码)</font>
 
 ### 在线消息收发
 
@@ -183,7 +187,9 @@ LiMTextContent content = new LiMTextContent("你好，我是文本消息");
 LiMaoSendMsgUtils.getInstance().sendMessage(content,"A",LiMChannelType.PERSONAL);
 ```
 
-##### 发送消息返回
+##### 消息入库返回（并不是消息发送状态）
+
+在发送消息时，sdk 将消息保存在本地数据库后就会触发入库回掉。此时消息并未进行发送，可在此监听中将消息展示在 UI 上
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMsgCallBackListener() {
@@ -194,6 +200,8 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMs
             }
         });
 ```
+
+- <font color='#999'>关于事件是否传入唯一 key 说明请查看[事件监听](/android/onlysdk.html#说明)</font>
 
 ##### 收到新消息监听
 
@@ -206,9 +214,11 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("key", new INewMsgL
         });
 ```
 
+- <font color='#999'>如果在聊天页面内收到新消息时需判断该消息是否属于当前会话，可通过消息对象`LiMMsg`的`channelID`和`channelType`判断</font>
+
 ##### 刷新消息监听
 
-在 sdk 更新过消息时，如：消息发送状态，有人点赞消息，消息已读回执，消息撤回等，sdk 都将回掉以下事件。
+在 sdk 更新过消息时，如：消息发送状态，有人点赞消息，消息已读回执，消息撤回，消息被编辑等等，sdk 都将回掉以下事件。UI 可通过消息对象`LiMMsg`的`clientMsgNO`来判断具体是哪条消息发生了更改。
 
 ```java
  LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRefreshMsg() {
@@ -219,6 +229,8 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("key", new INewMsgL
             }
         });
 ```
+
+- <font color='#999'>更多消息发送状态请查看[状态码](/android/onlysdk.html#状态码)</font>
 
 ##### 消息类核心属性
 
@@ -275,6 +287,8 @@ public class LiMMessageContent implements Parcelable {
 因为狸猫 IM 是支持消息永久存储，所以会产生海量的离线消息。对此我们采用了按需拉取的机制，如 10 个会话一个会话 10 万条消息，狸猫 IM 不会把这个 10\*10 万=100 万条消息都拉取到本地。 而是采用拉取这 10 个会话的信息和对应的最新 20 条消息，也就是实际只拉取了 200 条消息 相对 100 万条消息来说大大提高了离线拉取速度。用户点进对应的会话才会去按需拉取这个会话的消息。 这些机制 SDK 内部都已做好了封装，使用者其实不需要关心。使用者只需要关心最近会话的变化和监听获取数据的回掉即可。
 
 ##### 监听同步最近会话
+
+在打开应用时需同步最近会话列表，获取某个 channel 的未读数量、消息提醒、最后一条消息等
 
 ```java
 LiMaoIM.getInstance().getLiMConversationManager().addOnSyncConversationListener(new ISyncConversationChat() {
@@ -337,6 +351,8 @@ public void getOrSyncHistoryMessages(String channelId, byte channelType, long ol
 
 }
 ```
+
+- <font color='#999'>获取历史消息并不是同步方法，因为有可能存在非连续性时会往服务器同步数据</font>
 
 ### 文本消息
 
@@ -412,7 +428,7 @@ public class LiMCMD {
 
 在同步完最近会话或者修改过最近会话内容时，sdk 会将更新或新增的最近会话 push 给 UI。app 需监听以下方法
 
-##### 监听最近会话刷新
+#### 监听最近会话刷新
 
 ```java
  LiMaoIM.getInstance().getLiMConversationManager().addOnRefreshMsgListener("key", new IRefreshConversationMsg() {
@@ -424,7 +440,9 @@ public class LiMCMD {
         });
 ```
 
-##### 监听移除最近会话
+#### 监听移除最近会话
+
+在删除某个最近会话时会回掉此方法
 
 ```java
  LiMaoIM.getInstance().getLiMConversationManager().addOnDeleteMsgListener("key", new IDeleteConversationMsg() {
@@ -457,10 +475,10 @@ public class LiMUIConversationMsg {
 }
 ```
 
-##### 数据操作
+#### 数据操作
 
 ```java
-// 查询所以最近会话
+// 查询所有最近会话
 LiMaoIM.getInstance().getLiMConversationManager().queryMsgList();
 // 修改消息红点
 LiMaoIM.getInstance().getLiMConversationManager().updateRedDot(String channelID, byte channelType, int redDot);
@@ -470,9 +488,9 @@ LiMaoIM.getInstance().getLiMConversationManager().deleteMsg(String channelId, by
 
 ### 频道管理(置顶,免打扰等等)
 
-频道(Channel)狸猫 IM 中是一个比较抽象的概念。发送消息都是先发送给频道，频道根据自己的配置规则进行投递消息，频道分频道和频道详情。 更多介绍请移步[什么是频道](/unifying#什么是频道)
+频道(Channel)狸猫 IM 中是一个比较抽象的概念。发送消息都是先发送给频道，频道根据自己的配置规则进行投递消息，频道分频道和频道详情。 更多介绍请移步[什么是频道](/unifying.html#什么是频道channel)
 
-##### 频道属性
+#### 频道属性
 
 ```java
 public class LiMChannel implements Parcelable {
@@ -497,7 +515,7 @@ public class LiMChannel implements Parcelable {
 }
 ```
 
-##### 数据操作
+#### 数据操作
 
 ```java
 // 获取channel信息 先获取内存 如果没有再从数据库获取
@@ -540,7 +558,7 @@ LiMaoIM.getInstance().getLiMChannelManager().addOnGetChannelInfoListener(new IGe
 
 在狸猫 IM 中所有的消息类型都是自定义消息。下面我们已名片消息举例
 
-##### 第一步 定义消息
+#### 第一步 定义消息
 
 定义消息对象并继承 `LiMMessageContent` 并在构造方法中指定消息类型
 
@@ -559,11 +577,20 @@ public class LiMCardContent extends LiMMessageContent {
 }
 ```
 
-- <strong>自定义消息对象必须提供无参数的构造方法</strong>
+- <strong><font color='red'>注意：自定义消息对象必须提供无参数的构造方法</font></strong>
 
-##### 第二步 编码和解码消息
+#### 第二步 编码和解码消息
 
-我们需要将`uid`,`name`,`avatar`三个字段信息发送给对方，最终传递的消息内容为 {"type":3,"uid":"xxxx","name":xxx,"avatar":xxx}
+我们需要将`uid`,`name`,`avatar`三个字段信息发送给对方，最终传递的消息内容为
+
+```json
+{
+  "type": 3,
+  "uid": "xxxx",
+  "name": "xxx",
+  "avatar": "xxx"
+}
+```
 
 重写`LiMMessageContent`的`encodeMsg`方法开始编码
 
@@ -605,7 +632,7 @@ public String getDisplayContent() {
 }
 ```
 
-##### 第三步 注册消息
+#### 第三步 注册消息
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMCardContent.class);
@@ -641,9 +668,19 @@ public class LiMLocationContent extends LiMMediaMessageContent {
 
 - <font color='#999' size=2>`LiMMediaMessageContent`提供了`url`，`localPath`字段，自定义消息无需在定义网络地址和本地地址字段</font>
 
-##### 第二步 编码和解码
+#### 第二步 编码和解码
 
-我们需要将`longitude`,`latitude`,`address`,`url`信息发送给对方，最终传递的消息内容为 {"type":6,"longitude":115.25,"latitude":39.26,"address":xxx,url:xxx}
+我们需要将`longitude`,`latitude`,`address`,`url`信息发送给对方，最终传递的消息内容为
+
+```json
+{
+  "type": 6,
+  "longitude": 115.25,
+  "latitude": 39.26,
+  "url": "xxx",
+  "address": "xxx"
+}
+```
 
 重写`LiMMessageContent`的`encodeMsg`方法开始编码
 
@@ -683,7 +720,7 @@ public LiMMessageContent decodeMsg(JSONObject jsonObject) {
 
 - <font color='#999' size=2>在解码消息时如果是解码本地字段需判断该字段是否存在，因为收到的消息并没有本地字段。如`localPath`在收到消息时是没有的</font>
 
-##### 第三步 注册消息
+#### 第三步 注册消息
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.class);
@@ -693,7 +730,7 @@ LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.c
 
 在自定义附件消息的时候发送给对方的消息是将网络地址发送给对方，并不是实际的文件。这个时候我们就需监听附件的上传
 
-##### 监听上传附件
+#### 监听上传附件
 
 ```java
  LiMaoIM.getInstance().getLiMMsgManager().addOnUploadAttachListener(new IUploadAttachmentListener() {
@@ -713,7 +750,7 @@ LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.c
         });
 ```
 
-##### 附件下载
+#### 附件下载
 
 sdk 中不会主动下载消息的附件。在收到带有附件的消息时需要 app 自己按需下载。在 app 下载完成后需更改文件本地地址，避免重复下载
 
@@ -731,7 +768,7 @@ LiMaoIM.getInstance().getLiMMsgManager().updateContent(String clientMsgNo, LiMMe
 
 随着业务的发展应用在聊天中的功能也日益增多，为了满足绝大部分的需求 狸猫 IM 中增加了消息扩展功能。消息扩展分`本地扩展`和`远程扩展`，本地扩展只针对 app 本地使用卸载 app 后将丢失，远程扩展是服务器保存卸载重装后数据将恢复
 
-##### 本地扩展
+#### 本地扩展
 
 本地扩展就是消息对象`LiMMsg`中的`localExtraMap`字段
 
@@ -747,7 +784,7 @@ LiMaoIM.getInstance().getLiMMsgManager().updateLocalExtraWithClientMsgNo(String 
 
 - <font color='#999' size=2>更新成功后 sdk 会触发刷新消息回掉</font>
 
-##### 远程扩展
+#### 远程扩展
 
 远程扩展就是消息对象`LiMMsg`中的`remoteExtra`字段
 
@@ -768,7 +805,7 @@ LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChanne
 
 <video controls height='30%' width='30%' src="/video/msgedit.mp4"></video>
 
-##### 设置编辑内容
+#### 设置编辑内容
 
 ```java
 /**
@@ -809,7 +846,7 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
 
 ### 消息回应(点赞)
 
-如果你不理解消息回应请查看[什么是消息回应](/unifying#什么是消息回应)
+如果你不理解消息回应请查看[什么是消息回应](/unifying.html#什么是消息回应)
 
 当自己或者别人对消息回应(点赞)时，都会触发 cmd(命令)消息`syncMessageReaction`。app 需监听同步消息回应事件
 
@@ -824,7 +861,7 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
 
 请求到最新消息回应后将数据设置到 sdk
 
-##### 操作数据
+#### 操作数据
 
 ```java
 /**
@@ -850,7 +887,7 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
 
 消息的已读未读又称消息回执。消息回执功能可通过 setting 进行设置
 
-##### 发送带回执的消息
+#### 发送带回执的消息
 
 ```java
 LiMMsgSetting setting = new LiMMsgSetting();
@@ -861,7 +898,7 @@ LiMaoIM.getInstance().getLiMMsgManager().sendMessage(liMBaseContentMsgModel, set
 
 当登录用户浏览过对方发送的消息时，如果对方开启了消息回执这时需将查看过的消息上传到服务器标记该消息已读。当对方或者自己上传过已读消息这时服务器会下发同步消息扩展的 cmd(命令)消息`syncMessageExtra`,此时需同步最新消息扩展保存到 sdk 中
 
-##### 数据操作
+#### 数据操作
 
 ```java
  /**
@@ -887,7 +924,7 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
 
 ### 端对端加密
 
-##### 开启端对端加密
+#### 开启端对端加密
 
 ```java
 LiMMsgSetting setting = new LiMMsgSetting();
@@ -908,7 +945,7 @@ if(liMMsg.setting.signal == 1){
 
 会话提醒目前只支持服务器下发指令。客户端只需监听同步会话提醒和监听刷新会话消息即可
 
-##### 会话提醒核心属性
+#### 会话提醒核心属性
 
 ```java
 public class LiMReminder {
@@ -927,7 +964,7 @@ public class LiMReminder {
 }
 ```
 
-##### 操作数据
+#### 操作数据
 
 ```java
 /**
@@ -949,7 +986,7 @@ LiMaoIM.getInstance().getLiMConversationManager().addOnRefreshMsgListener("key",
         });
 ```
 
-##### 监听刷新
+#### 监听刷新
 
 ```java
 LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", new INewReminderListener() {
