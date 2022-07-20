@@ -77,6 +77,15 @@ include ':MyLibs:im'`
 api project(path: ':MyLibs:im')
 ```
 
+6、sdk 内涉及到数据库加密和消息加密需导入以下库
+
+```java
+api "net.zetetic:android-database-sqlcipher:4.5.0"
+api "androidx.sqlite:sqlite-ktx:2.2.0"
+api "org.whispersystems:curve25519-android:0.5.0"
+api "org.whispersystems:signal-protocol-android:2.8.1"
+```
+
 ### SDK 与 APP 交互原则
 
 ![SDK与已有APP交互原则](./sdk_app.png) sdk 与 app 交互流程就是 app 调用 sdk 提供的方法，sdk 处理完数据后通过事件将数据回掉给 app。如发送消息流程：app 调用发送消息方法，sdk 将入库后的消息 push 给 app
@@ -953,7 +962,7 @@ LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", ne
 
 ### 状态码
 
-#### 登录返回返回状态码
+#### 连接状态码
 
 连接 IM 后会返回连接状态，连接状态可通过`LiMConnectStatus`查看。具体状态码如下
 
@@ -968,6 +977,21 @@ LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", ne
 
 - <font color='#999' size=2>当返回状态码为 2，监听连接状态`reason` 为`ReasonConnectKick`时表示被踢（其他设备登录），`reason`为`ReasonAuthFail`表示认证失败（token 不对）</font>
 
+#### 发送消息状态码
+
+发送消息时不会在发送消息方法返回发送结果，需通过监听消息刷新事件来获取发送结果。具体状态码如下：
+
+```java
+0：发送中
+1：成功
+2：发送失败
+3：订阅者在频道内不存在
+4：在黑名单列表里
+14：未在白名单内
+```
+
+- <font color='#999' size=2>具体返回状态可通过`LiMSendMsgResult`查看</font>
+
 ### 资源下载
 
 <a href="/resource/LiMAndroidClientDemo.zip" target="_blank">demo 下载</a>
@@ -976,16 +1000,45 @@ LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", ne
 
 ### 混淆
 
-```java
 正式包开启混淆
+
 1、app 模块下 添加
-  jniDebuggable true
-  zipAlignEnabled true
-  minifyEnabled true
-  shrinkResources true  // 是否去除无效的资源文件
-   proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+```java
+jniDebuggable true
+zipAlignEnabled true
+minifyEnabled true
+shrinkResources true
+proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+```
 
 2、在混淆文件中 添加以下代码
+
+```java
 -keep class com.xinbida.limaoim.**{*;}
 -keep class com.xinbida.limaoim.entity.** { *; }
 ```
+
+#### 说明
+
+#### 事件监听
+
+sdk 内提供的事件监听分为两种：
+
+1、需要传入`key`的监听。这类监听可以在多个地方监听数据变化，并且可通过传入的`key`进行移除监听。如新消息监听和取消监听：
+
+```java
+// 开始监听
+LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("new_msg_key", new INewMsgListener() {
+    @Override
+    public void newMsg(List<LiMMsg> list) {
+
+    }
+});
+// 移除监听
+LiMaoIM.getInstance().getLiMMsgManager().removeNewMsgListener("new_msg_key");
+```
+
+- <font color='#999' size=2>一般在退出聊天页面时需移除新消息监听</font>
+
+2、不含`key`的监听。这类监听在应用内只能有一个监听，并且不能移除监听。多次调用会覆盖上一次监听回掉只会以最后一次监听为准。常见的有 获取 channel 资料、获取 ip port 等。
