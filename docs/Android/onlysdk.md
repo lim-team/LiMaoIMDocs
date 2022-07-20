@@ -113,43 +113,79 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMs
 
 在 Application 的 onCreate 方法中初始化 SDK
 
+`Java`
+
 ```java
- /**
-  * 初始化SDK
-  * @param context 上下文一般给Application
-  * @param uid 登录用户ID（业务服务端在IM通讯端登记了的uid））
-  * @param token 登录用户token（业务服务端在IM通讯端登记了的token）
-  */
+/**
+*  初始化IM
+* @param context Application Context
+* @param uid 登录用户ID（业务服务端在IM通讯端登记了的uid））
+* @param token 登录用户token（业务服务端在IM通讯端登记了的token）
+*/
 LiMaoIM.getInstance().initIM(context, uid, token);
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().initIM(context,uid,token)
+```
+
 监听获取连接服务器 IP 和 Port 的事件
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMConnectionManager().addOnGetIpAndPortListener(new IGetIpAndPort() {
             @Override
             public void getIP(IGetSocketIpAndPortListener iGetSocketIpAndPortListener) {
-                // 返回 IM通信端的IP 和 IM通信端的TCP端口
-                // 分布式可调用接口获取IP和Port后返回
                 iGetSocketIpAndPortListener.onGetSocketIpAndPort("48.135.49.152",6666);
             }
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMConnectionManager.addOnGetIpAndPortListener { p0 ->
+    p0!!.onGetSocketIpAndPort(
+        "48.135.49.152",
+        6666
+    )
+}
+```
+
+- <font color="#999" font-size=2>返回 IM 通信端的 IP 和 IM 通信端的 TCP 端口。<font color="#FF0000">分布式可调用接口获取 IP 和 Port 后返回</font></font>
+
 ### 连接与断开
 
-###### 连接与断开 IM
+#### 连接与断开 IM
+
+`Java`
 
 ```java
 // 连接IM
 LiMaoIM.getInstance().getLiMConnectionManager().connection();
 
 // 断开IM
-// isLogout: true：SDK将不再进行重连 false：SDK保持重连机制
 LiMaoIM.getInstance().getLiMConnectionManager().disconnect(isLogout);
 ```
 
+`Kotlin`
+
+```kotlin
+// 连接IM
+LiMaoIM.getInstance().liMConnectionManager.connection()
+
+// 断开IM
+LiMaoIM.getInstance().liMConnectionManager.disconnect(isLogout)
+```
+
+- <font color='#999'>isLogout: true：SDK 将不再进行重连 false：SDK 保持重连机制</font>
+
 ##### 连接状态监听
+
+`Java`
 
 ```java
  LiMaoIM.getInstance().getLiMConnectionManager().addOnConnectionStatusListener("key", new IConnectionStatus() {
@@ -162,34 +198,77 @@ LiMaoIM.getInstance().getLiMConnectionManager().disconnect(isLogout);
         });
 ```
 
+`Kotlin`
+
+```kotlin
+ LiMaoIM.getInstance().liMConnectionManager.addOnConnectionStatusListener(
+            "key"
+        ) { code, reason ->
+           if (code == LiMConnectStatus.success){
+               // 连接成功
+           }
+        }
+```
+
 - <font color='#999' size=2>更多连接状态请查看[状态码](/android/onlysdk.html#状态码)</font>
 
 ### 在线消息收发
 
-##### 发送消息
+#### 发送消息
+
+`Java`
 
 ```java
 /**
- * 发送消息 (发送并保存消息)
- @param liMMessageContent 消息正文
- @param channelID 投递的频道ID（个人频道，群频道，客服频道等等）
- @param channelType 投递的频道类型（个人频道，群频道，客服频道等等）
- */
-LiMaoIM.getInstance().getLiMMsgManager().sendMessage(liMMessageContent,channelID, channelType);
+*
+* @param textContent 消息正文
+* @param channelID 投递的频道ID
+* @param channelType 投递的频道类型（个人频道，群频道，客服频道等等）
+*/
+LiMaoIM.getInstance().getLiMMsgManager().sendMessage(textContent,channelID, channelType);
 ```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.sendMessage(liMMessageContent,channelID, channelType)
+```
+
+- <font size=2 color="#999">sdk 内置频道类型可通过`LiMChannelType`查看</font>
+
+如给用户`A`发送一条文本消息。构建文本消息正文
+
+`Java`
 
 ```java
-// 例如给用户A发送文本消息
-
-// 构建文本消息正文
-LiMTextContent content = new LiMTextContent("你好，我是文本消息");
-// 发送消息给用户A
-LiMaoSendMsgUtils.getInstance().sendMessage(content,"A",LiMChannelType.PERSONAL);
+LiMTextContent textContent = new LiMTextContent("你好，大A");
 ```
 
-##### 消息入库返回（并不是消息发送状态）
+`Kotlin`
+
+```kotlin
+val textContent = LiMTextContent("你好，大A")
+```
+
+将消息发送给用户`A`
+
+`Java`
+
+```java
+LiMaoIM.getInstance().getLiMMsgManager().sendMessage(textContent,"A",LiMChannelType.PERSONAL);
+```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.sendMessage(textContent,"A",LiMChannelType.PERSONAL)
+```
+
+#### 消息入库返回（并不是消息发送状态）
 
 在发送消息时，sdk 将消息保存在本地数据库后就会触发入库回掉。此时消息并未进行发送，可在此监听中将消息展示在 UI 上
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMsgCallBackListener() {
@@ -201,9 +280,19 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSendMsgCallback("key", new ISendMs
         });
 ```
 
-- <font color='#999'>关于事件是否传入唯一 key 说明请查看[事件监听](/android/onlysdk.html#说明)</font>
+`Kotlin`
 
-##### 收到新消息监听
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnSendMsgCallback("key") { liMMsg ->
+     // 将消息liMMsg展示在UI上
+    }
+```
+
+- <font color='#999' size=2>关于事件是否传入唯一 key 说明请查看[事件监听](/android/onlysdk.html#说明)</font>
+
+#### 收到新消息监听
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("key", new INewMsgListener() {
@@ -214,11 +303,19 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("key", new INewMsgL
         });
 ```
 
-- <font color='#999'>如果在聊天页面内收到新消息时需判断该消息是否属于当前会话，可通过消息对象`LiMMsg`的`channelID`和`channelType`判断</font>
+`Kotlin`
 
-##### 刷新消息监听
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnNewMsgListener("key") { list ->
+          // list:接收到的消息
+}
+```
 
-在 sdk 更新过消息时，如：消息发送状态，有人点赞消息，消息已读回执，消息撤回，消息被编辑等等，sdk 都将回掉以下事件。UI 可通过消息对象`LiMMsg`的`clientMsgNO`来判断具体是哪条消息发生了更改。
+- <font color='#999' size=2>如果在聊天页面内收到新消息时需判断该消息是否属于当前会话，可通过消息对象`LiMMsg`的`channelID`和`channelType`判断</font>
+
+#### 刷新消息监听
+
+在 sdk 更新过消息时，如：消息发送状态，有人点赞消息，消息已读回执，消息撤回，消息被编辑等等，sdk 都将回掉以下事件。UI 可通过消息对象`LiMMsg`的`clientMsgNO`来判断具体是哪条消息发生了更改。 `Java`
 
 ```java
  LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRefreshMsg() {
@@ -228,6 +325,15 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnNewMsgListener("key", new INewMsgL
                 // isEnd：为了避免频繁刷新UI导致卡顿，当isEnd为true时在刷新UI
             }
         });
+```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnRefreshMsgListener("") { liMMsg, isEnd ->
+   // liMMsg：刷新的消息对象
+  // isEnd：为了避免频繁刷新UI导致卡顿，当isEnd为true时在刷新UI
+}
 ```
 
 - <font color='#999'>更多消息发送状态请查看[状态码](/android/onlysdk.html#状态码)</font>
@@ -290,11 +396,13 @@ public class LiMMessageContent implements Parcelable {
 
 在打开应用时需同步最近会话列表，获取某个 channel 的未读数量、消息提醒、最后一条消息等
 
+`Java`
+
 ```java
 LiMaoIM.getInstance().getLiMConversationManager().addOnSyncConversationListener(new ISyncConversationChat() {
             @Override
             public void syncConversationChat(String last_msg_seqs, int msg_count, long version, ISyncConversationChatBack iSyncConversationChatBack) {
-                /**
+               /**
                 * 同步会话
                 *
                 * @param last_msg_seqs     最近会话列表msg_seq集合
@@ -302,14 +410,23 @@ LiMaoIM.getInstance().getLiMConversationManager().addOnSyncConversationListener(
                 * @param version           最大版本号
                 * @param iSyncConvChatBack 回调
                 */
-                // 请求接口后可通过 iSyncConvChatBack 回掉给sdk
             }
         });
 ```
 
-当进入某个聊天时，如果本地没有该聊天记录需同步服务器聊天记录。这时需监听同步某个会话的聊天记录
+`Kotlin`
 
-##### 监听同步某个频道的消息
+```kotlin
+LiMaoIM.getInstance().liMConversationManager.addOnSyncConversationListener { last_msg_seqs, msg_count, version, iSyncConversationChatBack ->
+    // todo 同步最近会话数据
+}
+```
+
+当进入某个聊天时，如果本地没有该 channel 的聊天记录需同步服务器聊天记录。
+
+#### 监听同步某个频道的消息
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnSyncChannelMsgListener(new ISyncChannelMsgListener() {
@@ -330,9 +447,29 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSyncChannelMsgListener(new ISyncCh
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnSyncChannelMsgListener { channelID, channelType, minMessageSeq, maxMessageSeq, limit, reverse, iSyncChannelMsgBack ->
+     /**
+        * 同步某个频道的消息
+        *
+        * @param channelID           频道ID
+        * @param channelType         频道类型
+        * @param minMessageSeq       最小messageSeq
+        * @param maxMessageSeq       最大messageSeq
+        * @param limit               获取条数
+        * @param reverse             true：从maxMessageSeq往前获取。false：从minMessageSeq往后获取。
+        * @param iSyncChannelMsgBack 请求返回
+        */
+}
+```
+
 当在聊天页面中时用户可以上拉下拉，或者搜索查看聊天数据，对此狸猫 sdk 提供了如下方法
 
-##### 查看某个频道的聊天信息
+#### 查看某个频道的聊天信息
+
+`Java`
 
 ```java
 /**
@@ -347,20 +484,40 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnSyncChannelMsgListener(new ISyncCh
   * @param limit                    每次获取数量
   * @param iGetOrSyncHistoryMsgBack 请求返还
   */
-public void getOrSyncHistoryMessages(String channelId, byte channelType, long oldestOrderSeq, boolean contain, boolean dropDown, int limit, long aroundMsgOrderSeq, final IGetOrSyncHistoryMsgBack iGetOrSyncHistoryMsgBack) {
+LiMaoIM.getInstance().getLiMMsgManager().getOrSyncHistoryMessages(String channelId, byte channelType, long oldestOrderSeq, boolean contain, boolean dropDown, int limit, long aroundMsgOrderSeq, final IGetOrSyncHistoryMsgBack iGetOrSyncHistoryMsgBack) {
 
 }
 ```
 
-- <font color='#999'>获取历史消息并不是同步方法，因为有可能存在非连续性时会往服务器同步数据</font>
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.getOrSyncHistoryMessages(channelId,channelType,oldestOrderSeq,contain,dropDown,limit,aroundMsgOrderSeq,object :IGetOrSyncHistoryMsgBack{
+            override fun onResult(list: MutableList<LiMMsg>?) {
+                // list 获取到的消息
+            }
+        })
+```
+
+- <font color='#999' size=2>获取历史消息并不是同步方法，因为有可能存在非连续性时会往服务器同步数据</font>
 
 ### 文本消息
 
+`Java`
+
 ```java
 public class LiMTextContent extends LiMMessageContent {
-   public LiMTextContent(String content) {
+    // 消息编码格式
+    // text 普通文本
+    // html 富文本
+    // markdown markdown
+    public String format;
+
+    public LiMTextContent(String content) {
         this.content = content;
-   }
+        this.type = LiMMsgContentType.LIMAO_TEXT;
+        this.format = "text";
+    }
 }
 ```
 
@@ -375,6 +532,8 @@ public class LiMImageContent extends LiMMediaMessageContent {
   }
 }
 ```
+
+- <font color="#999" size=2>在构建图片消息正文时，无需传递图片的高宽。sdk 会自动获取图片高宽</font>
 
 ### 语音消息
 
@@ -430,6 +589,8 @@ public class LiMCMD {
 
 #### 监听最近会话刷新
 
+`Java`
+
 ```java
  LiMaoIM.getInstance().getLiMConversationManager().addOnRefreshMsgListener("key", new IRefreshConversationMsg() {
             @Override
@@ -440,9 +601,22 @@ public class LiMCMD {
         });
 ```
 
+`Kotlin`
+
+```kotlin
+ LiMaoIM.getInstance().liMConversationManager.addOnRefreshMsgListener(
+            "key"
+        ) { liMUIConversationMsg, isEnd ->
+            // liMUIConversationMsg 最近会话消息内容 UI上已有该会话需进行更新，反之添加到UI上
+            // isEnd 为了防止频繁刷新UI，当isEnd为true可刷新UI
+        }
+```
+
 #### 监听移除最近会话
 
 在删除某个最近会话时会回掉此方法
+
+`Java`
 
 ```java
  LiMaoIM.getInstance().getLiMConversationManager().addOnDeleteMsgListener("key", new IDeleteConversationMsg() {
@@ -452,6 +626,17 @@ public class LiMCMD {
                 // channelType 聊天频道类型
             }
         });
+```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMConversationManager.addOnDeleteMsgListener(
+            "key"
+        ) { channelID, channelType ->
+            // channelID 聊天频道ID
+            // channelType 聊天频道类型
+        }
 ```
 
 LiMUIConversationMsg 类核心数据
@@ -477,13 +662,30 @@ public class LiMUIConversationMsg {
 
 #### 数据操作
 
+`Java`
+
 ```java
 // 查询所有最近会话
 LiMaoIM.getInstance().getLiMConversationManager().queryMsgList();
+
 // 修改消息红点
 LiMaoIM.getInstance().getLiMConversationManager().updateRedDot(String channelID, byte channelType, int redDot);
+
 // 删除某个会话
 LiMaoIM.getInstance().getLiMConversationManager().deleteMsg(String channelId, byte channelType);
+```
+
+`Kotlin`
+
+```kotlin
+// 查询所有最近会话
+LiMaoIM.getInstance().liMConversationManager.queryMsgList()
+
+// 修改消息红点
+LiMaoIM.getInstance().liMConversationManager.updateRedDot( channelID, channelType, redDot)
+
+// 删除某个会话
+LiMaoIM.getInstance().liMConversationManager.deleteMsg( channelId, channelType)
 ```
 
 ### 频道管理(置顶,免打扰等等)
@@ -517,6 +719,8 @@ public class LiMChannel implements Parcelable {
 
 #### 数据操作
 
+`Java`
+
 ```java
 // 获取channel信息 先获取内存 如果没有再从数据库获取
 LiMaoIM.getInstance().getLiMChannelManager().getLiMChannel(String channelID, byte channelType)
@@ -525,10 +729,25 @@ LiMaoIM.getInstance().getLiMChannelManager().getLiMChannel(String channelID, byt
 LiMaoIM.getInstance().getLiMChannelManager().fetchChannelInfo(String channelID, byte channelType)
 
 // 批量导入频道信息 该方法会触发channel刷新事件
-LiMaoIM.getInstace().getLiMChannelManager().addOrUpdateChannels(List<LiMChannel> list);
+LiMaoIM.getInstance().getLiMChannelManager().addOrUpdateChannels(List<LiMChannel> list);
+```
+
+`Kotlin`
+
+```kotlin
+// 获取channel信息 先获取内存 如果没有再从数据库获取
+LiMaoIM.getInstance().liMChannelManager.getLiMChannel(channelID,channelType)
+
+// 从远程服务器获取channel信息
+LiMaoIM.getInstance().liMChannelManager.fetchChannelInfo(channelID,channelType)
+
+// 批量导入频道信息 该方法会触发channel刷新事件
+LiMaoIM.getInstance().liMChannelManager.addOrUpdateChannels(list)
 ```
 
 ##### 数据监听
+
+`Java`
 
 ```java
 // 监听channel刷新事件
@@ -550,6 +769,24 @@ LiMaoIM.getInstance().getLiMChannelManager().addOnGetChannelInfoListener(new IGe
         });
 ```
 
+`Kotlin`
+
+```kotlin
+// 监听channel刷新事件
+LiMaoIM.getInstance().liMChannelManager.addOnRefreshChannelInfo(
+    "key"
+) { liMChannel, isEnd ->
+    // 更新UI
+}
+
+// 监听获取channel信息
+LiMaoIM.getInstance().liMChannelManager.addOnGetChannelInfoListener { channelID, channelType, iChannelInfoListener ->
+    // 获取个人资料还是群资料可通过 channelType 区分
+    // 如果app本地有该channel信息可直接返回数据，反之可获取网络数据后通过 iChannelInfoListener 返回
+    null
+}
+```
+
 - <font color='#999' size=2>SDK 内置频道类型 可通过 `LiMChannelType` 查看</font>
 
 ## 进阶使用
@@ -564,6 +801,8 @@ LiMaoIM.getInstance().getLiMChannelManager().addOnGetChannelInfoListener(new IGe
 
 - <font color='#999' size=2>SDK 内置消息类型可通过 `LiMMsgContentType` 查看</font>
 
+`Java`
+
 ```java
 public class LiMCardContent extends LiMMessageContent {
 
@@ -574,6 +813,20 @@ public class LiMCardContent extends LiMMessageContent {
     public String uid; // 用户ID
     public String name; // 用户名称
     public String avatar; // 用户头像
+}
+```
+
+`Kotlin`
+
+```kotlin
+class LiMCardContent : LiMMessageContent() {
+    var uid: String = ""
+    var name: String = ""
+    var avatar: String = ""
+
+    init {
+        type = 3; //指定消息类型
+    }
 }
 ```
 
@@ -594,6 +847,8 @@ public class LiMCardContent extends LiMMessageContent {
 
 重写`LiMMessageContent`的`encodeMsg`方法开始编码
 
+`Java`
+
 ```java
 @Override
 public JSONObject encodeMsg() {
@@ -609,7 +864,21 @@ public JSONObject encodeMsg() {
 }
 ```
 
+`Kotlin`
+
+```kotlin
+override fun encodeMsg(): JSONObject {
+    val jsonObject = JSONObject()
+    jsonObject.put("uid", uid)
+    jsonObject.put("name", name)
+    jsonObject.put("avatar", avatar)
+    return jsonObject
+}
+```
+
 重写`LiMMessageContent`的`decodeMsg`方法开始解码
+
+`Java`
 
 ```java
 @Override
@@ -621,9 +890,22 @@ public LiMMessageContent decodeMsg(JSONObject jsonObject) {
 }
 ```
 
+`Kotlin`
+
+```kotlin
+override fun decodeMsg(jsonObject: JSONObject): LiMMessageContent {
+    this.uid = jsonObject.optString("uid")
+    this.name = jsonObject.optString("name")
+    this.avatar = jsonObject.optString("avatar")
+    return this
+}
+```
+
 - <font color='#999' size=2>解码和编码消息时无需将 `type` 字段考虑其中，sdk 内部会自动处理</font>
 
 如果您想控制该自定义消息在获取时显示的内容可重写 `getDisplayContent` 方法
+
+`Java`
 
 ```java
 @Override
@@ -632,10 +914,45 @@ public String getDisplayContent() {
 }
 ```
 
+`Kotlin`
+
+```kotlin
+override fun getDisplayContent(): String {
+        return "[名片消息]"
+    }
+```
+
+如果你想在全局搜索时能搜索到该类型的消息，可重写`getSearchableWord` 方法
+
+`Java`
+
+```java
+@Override
+public String getSearchableWord() {
+    return "[名片]";
+}
+```
+
+`Kotlin`
+
+```
+ override fun getSearchableWord(): String {
+        return "[名片]"
+    }
+```
+
 #### 第三步 注册消息
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMCardContent.class);
+```
+
+`Kotlin`
+
+```kotlin
+ LiMaoIM.getInstance().liMMsgManager.registerContentMsg(LiMCardContent::class.java)
 ```
 
 对此通过这三步自定义普通消息就已完成
@@ -644,9 +961,11 @@ LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMCardContent.class
 
 我们在发送消息的时候有时需发送带附件的消息。狸猫 IM 也提供自定义附件消息，自定义附件消息和普通消息区别不大。下面我们已地理位置消息举例
 
-##### 第一步 定义消息
+#### 第一步 定义消息
 
 值得注意的是自定义附件消息需继承`LiMMediaMessageContent`而不是`LiMMessageContent`
+
+`Java`
 
 ```java
 public class LiMLocationContent extends LiMMediaMessageContent {
@@ -662,6 +981,19 @@ public class LiMLocationContent extends LiMMediaMessageContent {
     // 这里必须提供无参数的构造方法
     public LiMLocationContent() {
         type = 6;
+    }
+}
+```
+
+`Kotlin`
+
+```kotlin
+
+class LiMLocationContent(var longitude: Double, var latitude: Double, var address: String) :
+    LiMMediaMessageContent() {
+
+    init {
+        type = 6 //指定消息类型
     }
 }
 ```
@@ -684,6 +1016,8 @@ public class LiMLocationContent extends LiMMediaMessageContent {
 
 重写`LiMMessageContent`的`encodeMsg`方法开始编码
 
+`Java`
+
 ```java
 @Override
   public JSONObject encodeMsg() {
@@ -701,9 +1035,25 @@ public class LiMLocationContent extends LiMMediaMessageContent {
   }
 ```
 
+`Kotlin`
+
+```kotlin
+override fun encodeMsg(): JSONObject {
+    val jsonObject = JSONObject()
+    jsonObject.put("longitude", longitude)
+    jsonObject.put("latitude", latitude)
+    jsonObject.put("address", address)
+    jsonObject.put("url", url)
+    jsonObject.put("localPath", localPath)
+    return jsonObject
+}
+```
+
 - <font color='#999' size=2>编码消息可以写入`localPath`本地字段，sdk 在保存完消息时发送给对方的消息是不包含该字段的</font>
 
 重写`LiMMessageContent`的`decodeMsg`方法开始解码
+
+`Java`
 
 ```java
 @Override
@@ -718,12 +1068,34 @@ public LiMMessageContent decodeMsg(JSONObject jsonObject) {
 }
 ```
 
+`Kotlin`
+
+```kotlin
+override fun decodeMsg(jsonObject: JSONObject): LiMMessageContent {
+    this.latitude = jsonObject.optDouble("latitude")
+    this.longitude = jsonObject.optDouble("longitude")
+    this.address = jsonObject.optString("address")
+    this.url = jsonObject.optString("url")
+    if (jsonObject.has("localPath"))
+        this.localPath = jsonObject.optString("localPath")
+    return this
+}
+```
+
 - <font color='#999' size=2>在解码消息时如果是解码本地字段需判断该字段是否存在，因为收到的消息并没有本地字段。如`localPath`在收到消息时是没有的</font>
 
 #### 第三步 注册消息
 
+`Java`
+
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.class);
+```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.registerContentMsg(LiMLocationContent::class.java)
 ```
 
 ### 消息附件管理
@@ -731,6 +1103,8 @@ LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.c
 在自定义附件消息的时候发送给对方的消息是将网络地址发送给对方，并不是实际的文件。这个时候我们就需监听附件的上传
 
 #### 监听上传附件
+
+`Java`
 
 ```java
  LiMaoIM.getInstance().getLiMMsgManager().addOnUploadAttachListener(new IUploadAttachmentListener() {
@@ -750,9 +1124,28 @@ LiMaoIM.getInstance().getLiMMsgManager().registerContentMsg(LiMLocationContent.c
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnUploadAttachListener { liMMsg, listener ->
+    // 在这里将未上传的文件上传到服务器并返回给sdk
+    if (liMMsg.type == 6) {
+        val liMMediaMessageContent = liMMsg.baseContentMsgModel as LiMMediaMessageContent
+        if (TextUtils.isEmpty(liMMediaMessageContent.url)) {
+            // todo 上传文件
+            // ...
+            liMMediaMessageContent.url = "xxxxxx" // 设置网络地址并返回给sdk
+            listener.onUploadResult(true, liMMediaMessageContent)
+        }
+    }
+}
+```
+
 #### 附件下载
 
 sdk 中不会主动下载消息的附件。在收到带有附件的消息时需要 app 自己按需下载。在 app 下载完成后需更改文件本地地址，避免重复下载
+
+`Java`
 
 ```java
 /**
@@ -764,6 +1157,12 @@ sdk 中不会主动下载消息的附件。在收到带有附件的消息时需�
 LiMaoIM.getInstance().getLiMMsgManager().updateContent(String clientMsgNo, LiMMessageContent liMMessageContent);
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.updateContent(clientMsgNo,  liMMessageContent)
+```
+
 ### 消息扩展
 
 随着业务的发展应用在聊天中的功能也日益增多，为了满足绝大部分的需求 狸猫 IM 中增加了消息扩展功能。消息扩展分`本地扩展`和`远程扩展`，本地扩展只针对 app 本地使用卸载 app 后将丢失，远程扩展是服务器保存卸载重装后数据将恢复
@@ -771,6 +1170,8 @@ LiMaoIM.getInstance().getLiMMsgManager().updateContent(String clientMsgNo, LiMMe
 #### 本地扩展
 
 本地扩展就是消息对象`LiMMsg`中的`localExtraMap`字段
+
+`Java`
 
 ```java
 /**
@@ -782,11 +1183,19 @@ LiMaoIM.getInstance().getLiMMsgManager().updateContent(String clientMsgNo, LiMMe
 LiMaoIM.getInstance().getLiMMsgManager().updateLocalExtraWithClientMsgNo(String clientMsgNo, HashMap<String, Object> hashExtra);
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.updateLocalExtraWithClientMsgNo( clientMsgNo,hashExtra)
+```
+
 - <font color='#999' size=2>更新成功后 sdk 会触发刷新消息回掉</font>
 
 #### 远程扩展
 
 远程扩展就是消息对象`LiMMsg`中的`remoteExtra`字段
+
+`Java`
 
 ```java
  /**
@@ -794,7 +1203,13 @@ LiMaoIM.getInstance().getLiMMsgManager().updateLocalExtraWithClientMsgNo(String 
   * @param liMChannel 某个channel信息
   * @param list 远程扩展数据
   */
-LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChannel, List<LiMSyncExtraMsg> list)
+LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChannel, List<LiMSyncExtraMsg> list);
+```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.saveRemoteExtraMsg(liMChannel,  list)
 ```
 
 - <font color='#999' size=2>更新成功后 sdk 会触发刷新消息回掉</font>
@@ -807,6 +1222,8 @@ LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChanne
 
 #### 设置编辑内容
 
+`Java`
+
 ```java
 /**
   * 修改编辑内容
@@ -818,7 +1235,17 @@ LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChanne
 LiMaoIM.getInstance().getLiMMsgManager().updateMsgEdit(String msgID, String channelID, byte channelType, String content);
 ```
 
-更改 sdk 消息编辑内容后需将编辑后的内容上传到服务器
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.updateMsgEdit(msgID,channelID,channelType,content)
+```
+
+更改 sdk 消息编辑内容后需将编辑后的内容上传到服务器,则需要监听上传消息扩展
+
+##### 监听上传消息扩展
+
+`Java`
 
 ```java
 //监听上传消息扩展
@@ -830,7 +1257,21 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnUploadMsgExtraListener(new IUpload
       });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnUploadMsgExtraListener(object :IUploadMsgExtraListener{
+    override fun onUpload(msgExtra: LiMMsgExtra) {
+        // 上传到服务器
+    }
+})
+```
+
 如果自己或者别人编辑了消息，都会触发 cmd(命令)消息`syncMessageExtra`，收到此消息后去同步消息扩展即可 app 需监听消息更新的事件完成对 UI 的刷新
+
+##### 监听刷新消息
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRefreshMsg() {
@@ -844,11 +1285,56 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnRefreshMsgListener("key",object :IRefreshMsg{
+    override fun onRefresh(liMMsg: LiMMsg, isEnd: Boolean) {
+            // liMMsg.remoteExtra.contentEdit 编辑后的内容
+            // liMMsg.remoteExtra.contentEditMsgModel 编辑后的消息体
+        // liMMsg.remoteExtra.editedAt 编辑时间戳
+    }
+})
+```
+
+### 消息回复
+
+在聊天中如果消息过多，发送消息回复就会显得消息很乱无章可循。这时就需要对某条消息进行特定的回复，即消息回复，如以下效果 <img src='./msg_reply.jpg' width=30%/>
+
+在发送消息时，只需将消息正文`LiMMessageContent`中的`LiMReply`对象赋值就能对达到消息回复效果
+
+`LiMReply` 对象核心字段
+
+```java
+// 被回复的消息根ID，多级回复时的第一次回复的消息ID
+public String root_mid;
+// 被回复的消息ID
+public String message_id;
+// 被回复的MessageSeq
+public long message_seq;
+// 被回复者uid
+public String from_uid;
+// 被回复者名称
+public String from_name;
+// 被回复的消息体
+public LiMMessageContent payload;
+// 被回复消息编辑后的内容
+public String contentEdit;
+// 被回复消息编辑后的消息实体
+public LiMMessageContent contentEditMsgModel;
+// 编辑时间
+public long editAt;
+```
+
 ### 消息回应(点赞)
 
 如果你不理解消息回应请查看[什么是消息回应](/unifying.html#什么是消息回应)
 
 当自己或者别人对消息回应(点赞)时，都会触发 cmd(命令)消息`syncMessageReaction`。app 需监听同步消息回应事件
+
+#### 同步消息回应
+
+`Java`
 
 ```java
  LiMaoIM.getInstance().getLiMMsgManager().addOnSyncMsgReactionListener(new ISyncMsgReaction() {
@@ -859,9 +1345,19 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnSyncMsgReactionListener { channelID, channelType, maxSeq ->
+    // 请求接口获取最新消息回应
+}
+```
+
 请求到最新消息回应后将数据设置到 sdk
 
 #### 操作数据
+
+`Java`
 
 ```java
 /**
@@ -871,7 +1367,17 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
 LiMaoIM.getInstance().getLiMMsgManager().saveMessageReactions(List<LiMSyncMsgReaction> list);
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.saveMessageReactions(list)
+```
+
 - <font color='#999' size=2>同一个用户对同一条消息只能做出一条回应。重复进行消息不同 emoji 的回应会做为修改回应，重复进行相同 emoji 的回应则做为删除回应</font> sdk 更新消息回应后会触发消息刷新的事件。app 需监听此事件并对 UI 进行刷新
+
+#### 监听刷新消息
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRefreshMsg() {
@@ -883,11 +1389,22 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnRefreshMsgListener("key") { liMMsg, isEnd ->
+    // liMMsg.reactionList 最新消息的回应
+    // ... 刷新UI
+}
+```
+
 ### 已读未读管理
 
 消息的已读未读又称消息回执。消息回执功能可通过 setting 进行设置
 
 #### 发送带回执的消息
+
+`Java`
 
 ```java
 LiMMsgSetting setting = new LiMMsgSetting();
@@ -896,9 +1413,25 @@ setting.receipt = 1; // 开启回执
 LiMaoIM.getInstance().getLiMMsgManager().sendMessage(liMBaseContentMsgModel, setting, channelID, channelType);
 ```
 
+`Kotlin`
+
+```kotlin
+val setting = LiMMsgSetting()
+setting.receipt = 1 // 开启回执
+// 发送消息
+LiMaoIM.getInstance().liMMsgManager.sendMessage(
+    liMBaseContentMsgModel,
+    setting,
+    channelID,
+    channelType
+)
+```
+
 当登录用户浏览过对方发送的消息时，如果对方开启了消息回执这时需将查看过的消息上传到服务器标记该消息已读。当对方或者自己上传过已读消息这时服务器会下发同步消息扩展的 cmd(命令)消息`syncMessageExtra`,此时需同步最新消息扩展保存到 sdk 中
 
 #### 数据操作
+
+`Java`
 
 ```java
  /**
@@ -909,7 +1442,15 @@ LiMaoIM.getInstance().getLiMMsgManager().sendMessage(liMBaseContentMsgModel, set
 LiMaoIM.getInstance().getLiMMsgManager().saveRemoteExtraMsg(LiMChannel liMChannel, List<LiMSyncExtraMsg> list);
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.saveRemoteExtraMsg(liMChannel, list)
+```
+
 app 需监听消息更新的事件完成对 UI 的刷新
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRefreshMsg() {
@@ -922,15 +1463,43 @@ LiMaoIM.getInstance().getLiMMsgManager().addOnRefreshMsgListener("key", new IRef
         });
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMMsgManager.addOnRefreshMsgListener(
+            "key"
+        ) { liMMsg, isEnd ->
+            // liMMsg.remoteExtra.readedCount 已读数量
+            // liMMsg.remoteExtra.unreadCount 未读数量
+            // ... 刷新UI
+        }
+```
+
 ### 端对端加密
 
 #### 开启端对端加密
+
+`Java`
 
 ```java
 LiMMsgSetting setting = new LiMMsgSetting();
 setting.signal = 1; // 开启加密
 // 发送加密消息
 LiMaoIM.getInstance().getLiMMsgManager().sendMessage(liMBaseContentMsgModel, setting, channelID, channelType);
+```
+
+`Kotlin`
+
+```kotlin
+val setting = LiMMsgSetting()
+setting.signal = 1 // 开启加密
+// 发送加密消息
+LiMaoIM.getInstance().liMMsgManager.sendMessage(
+    liMBaseContentMsgModel,
+    setting,
+    channelID,
+    channelType
+)
 ```
 
 在收到消息时可通过`LiMMsg`对象的`LiMMsgSetting`中的`signal`判断该消息是否开启了加密
@@ -966,6 +1535,8 @@ public class LiMReminder {
 
 #### 操作数据
 
+`Java`
+
 ```java
 /**
   * 保存消息提醒
@@ -974,7 +1545,17 @@ public class LiMReminder {
 LiMaoIM.getInstance().getLiMReminderManager().saveReminders(result);
 ```
 
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMReminderManager.saveReminders(result)
+```
+
 当 sdk 更新了会话提醒会触发最近会话的刷新事件，此时需监听刷新最近会话事件
+
+#### 监听刷新最近会话
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMConversationManager().addOnRefreshMsgListener("key", new IRefreshConversationMsg() {
@@ -986,7 +1567,18 @@ LiMaoIM.getInstance().getLiMConversationManager().addOnRefreshMsgListener("key",
         });
 ```
 
+`Kotlin`
+
+```kotlin
+ LiMaoIM.getInstance().liMConversationManager.addOnRefreshMsgListener("key") { liMUIConversationMsg, isEnd ->
+    // liMUIConversationMsg.getReminderList() 最新消息提醒
+    // 更新最近会话UI
+}
+```
+
 #### 监听刷新
+
+`Java`
 
 ```java
 LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", new INewReminderListener() {
@@ -995,6 +1587,15 @@ LiMaoIM.getInstance().getLiMReminderManager().addOnNewReminderListener("key", ne
                 // 新提醒
             }
         })
+```
+
+`Kotlin`
+
+```kotlin
+LiMaoIM.getInstance().liMReminderManager.addOnNewReminderListener("key",object :INewReminderListener{
+    override fun newReminder(list: MutableList<LiMReminder>) {
+    }
+})
 ```
 
 ### 状态码
