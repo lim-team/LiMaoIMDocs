@@ -1,5 +1,5 @@
 ---
-title: 已有服务端集成通讯端
+title: 部署狸猫IM通讯端
 order: 20000
 toc: menu
 group:
@@ -43,16 +43,28 @@ group:
 
 #### 安装docker-compose
 
-```
+```shell
 
-# sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-# sudo chmod +x /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.7.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 
 ```
 
 #### 单机部署
 
-新建文件 docker-compose.yaml 复制如下内容
+1. 新建文件夹 
+
+```shell
+
+mkdir -p ~/limao/im
+
+```
+
+2. 在新建文件夹下新建文件 docker-compose.yaml 复制如下内容 
+
+```shell
+cd ~/limao/im && vi docker-compose.yaml
+```
 
 ```yaml
 version: '3.7'
@@ -76,17 +88,35 @@ services:
     ports:
       - 7677:7677  # tcp连接端口
       - 2122:2122  # websocket连接端口
-      - 1516:1516  # 内部api地址
+      - 1516:1516  # 业务端调用的api地址（一般为内网调用，为安全起见不要暴露到外网）
 networks:
   limao:
 
 ```
 
+启动服务
+
+```shell
+
+docker-compose up -d
+
+```
+
 #### 分布式部署
 
-1. 新建文件 docker-compose.yaml
+1. 新建文件夹 
 
-2. 复制以下内容到新建的docker-compose.yaml内 （以下yaml仅做为测试，正式环境建议将节点部署在不同物理机上）
+```shell
+
+mkdir -p ~/limao/im
+
+```
+
+2. 在新建文件夹下新建文件 docker-compose.yaml 复制如下内容  （以下yaml仅做为测试，正式环境建议将节点部署在不同物理机上）
+
+```shell
+cd ~/limao/im && vi docker-compose.yaml
+```
 
 
 ```yaml
@@ -110,13 +140,15 @@ services:
     image: limaoim/limaoim:latest
     restart: always
     hostname: limaoim
+    networks:
+      - "limao"
     volumes:
       - ./limaodata-1:/home/limaodata-1
     environment:
       nodeID: 1   # 节点编号 范围 1-1024
       appID: limaodemo  # 测试使用，正式的请找官方购买
       appKey: 8sTRZCZgPV2v6QZG # 测试使用，正式的请找官方购买
-      mode: "debug"  # 模式 debug 测试 release 正式 bench 压力测试
+      mode: "release"  # 模式 debug 测试 release 正式 bench 压力测试
       externalIP: "" #  外网IP 如果没配置将通过ifconfig.io获取,如果通过ifconfig.io获取注意当前机器是否能访问到ifconfig.io
       proxy: "proxy:16666"
       nodeRaftAddr: "limao1:6000"
@@ -124,8 +156,8 @@ services:
       nodeAPIAddr: "http://limao1:1516"
       addr: "tcp://0.0.0.0:7676"
       wsAddr: "0.0.0.0:2121"
-      webhook: "http://xxxx/v2/webhook" # webhook 见webhook章节
-      datasource: "http://xxxx/v1/datasource" # 数据源 见数据源章节 （非必需）
+    #  webhook: "http://xxxx/v2/webhook" # webhook 见webhook章节
+    #  datasource: "http://xxxx/v1/datasource" # 数据源 见数据源章节 （非必需）
       monitorOn: 0
     ports:
       - 7676:7676  # tcp连接端口
@@ -142,25 +174,59 @@ services:
       nodeID: 2   # 节点编号 范围 1-1024
       appID: limaodemo  # 测试使用，正式的请找官方购买
       appKey: 8sTRZCZgPV2v6QZG # 测试使用，正式的请找官方购买
-      mode: "debug"  # 模式 debug 测试 release 正式 bench 压力测试
-      proxy: "proxy:16666"
+      mode: "release"  # 模式 debug 测试 release 正式 bench 压力测试
+      proxy: "proxy:16666" # 代理服务器的地址
       nodeRaftAddr: "limao2:6000"
       nodeRPCAddr: "limao2:6001"
       nodeAPIAddr: "http://limao2:1516"
       addr: "tcp://0.0.0.0:7677"
-      wsAddr: "0.0.0.0:2122"
-      webhook: "http://xxxx/v2/webhook" # webhook 见webhook章节
-      datasource: "http://xxxx/v1/datasource" # 数据源 见数据源章节 （非必需）
+      wsAddr: "0.0.0.0:2122" # websocket的监听地址
+    #  webhook: "http://xxxx/v2/webhook" # webhook 见webhook章节
+    #  datasource: "http://xxxx/v1/datasource" # 数据源 见数据源章节 （非必需）
       monitorOn: 0
     ports:
       - 7677:7677  # tcp连接端口
       - 2122:2122  # websocket连接端口
+  limao3: # 节点3
+    image: limaoim/limaoim:latest
+    restart: always
+    hostname: limaoim
+    networks:
+      - "limao"
+    volumes:
+      - ./limaodata-3:/home/limaodata-3
+    environment:
+      nodeID: 3   # 节点编号 范围 1-1024
+      appID: limaodemo  # 测试使用，正式的请找官方购买
+      appKey: 8sTRZCZgPV2v6QZG # 测试使用，正式的请找官方购买
+      mode: "release"  # 模式 debug 测试 release 正式 bench 压力测试
+      proxy: "proxy:16666" # 代理服务器的地址
+      nodeRaftAddr: "limao3:6000"
+      nodeRPCAddr: "limao3:6001"
+      nodeAPIAddr: "http://limao3:1516"
+      addr: "tcp://0.0.0.0:7678"
+      wsAddr: "0.0.0.0:2123" # websocket的监听地址
+    #  webhook: "http://xxxx/v2/webhook" # webhook 见webhook章节
+    #  datasource: "http://xxxx/v1/datasource" # 数据源 见数据源章节 （非必需）
+      monitorOn: 0
+    ports:
+      - 7678:7678  # tcp连接端口
+      - 2123:2123  # websocket连接端口    
 networks:
   limao:    
 
 ```
 
-3. 打开 http://IP:18029/cluster 返回类似如下内容，slot_state和state都为1 则表示集群就绪 
+启动服务
+
+```shell
+
+docker-compose up -d
+
+```
+
+
+3. 执行 `curl http://127.0.0.1:18029/cluster` 返回类似如下内容，slot_state和state都为1 则表示集群就绪 
 
 ```json
 
@@ -304,7 +370,7 @@ body的数据类似为： [uid1-0-1,uid2-1-0]
 ```
 以下为具体webhook详情
 
-**用户在线状态**
+**`用户在线状态`**
 
 每个用户的上线和下线都会通过此webhook通知给第三方服务器
 
@@ -314,7 +380,7 @@ body的数据类似为： [uid1-0-1,uid2-1-0]
 
 数据说明：  设备标识 0.为app 1.为web端  在线状态 0.离线 1.在线
 
-**离线消息通知**
+**`离线消息通知`**
 
 离线消息通知主要是将需要通过离线推送的消息通知给第三方服务器，第三方服务器收到此webhook后需要将此消息内容调用手机厂商推送接口，将消息推给ToUIDs列表的用户
 
@@ -341,7 +407,7 @@ type MessageResp struct {
 
 ```
 
-**所有消息**
+**`所有消息`**
 
 狸猫IM会将所有消息推送给第三方服务器（为了降低第三方服务器的压力，并不是一条一条推送，做了延迟处理，默认是500毫秒批量推送一次，这个可自己视情况配置），第三方服务器可视情况保存或不保存（有一些业务需要保存，比如将消息存入ElasticSearch，给客户端做搜索使用）不管保不保存，狸猫IM通讯端都会保存用户的消息。
 
@@ -386,7 +452,7 @@ type MessageResp struct {
 
 详情如下：
 
-**获取订阅者(群成员)**
+**`获取订阅者(群成员)`**
 
 当狸猫IM通讯端需要获取订阅者列表的时候就会调用此cmd进行获取
 
@@ -410,7 +476,7 @@ type MessageResp struct {
 [uid1,uid2,...] // 当前频道的成员用户id列表
 ```
 
-**获取黑名单**
+**`获取黑名单`**
 
 如果不允许频道成员内某个人收不到消息，可以返回黑名单
 
@@ -436,7 +502,7 @@ type MessageResp struct {
 ```
 
 
-**获取白名单**
+**`获取白名单`**
 
 如果只允许频道内某些人收到消息，则返回收到消息的成员用户id列表。
 比如实现群禁言，那么可以返回群主和管理员的uid，这样其他群成员将无法发送消息，只有群主和管理能发送消息
@@ -465,7 +531,7 @@ type MessageResp struct {
 ```
 
 
-**获系统账号**
+**`获系统账号`**
 
 系统账号不受黑名单白名单限制，而且系统账号不在某个频道内也可以发送消息，也就是对发送消息无如何限制
 

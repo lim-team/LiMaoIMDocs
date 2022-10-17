@@ -64,18 +64,22 @@ $ yarn add limao
 
 ## 基础使用
 
+### 引入
+
+import { LIMSDK } from  "limao/lib/sdk"
+
 ### 初始化
 
 ```ts
 
 // 集群模式通过此方法获取连接地址
-LIMSDK.shared().config.provider.connectAddrCallback = async (callback: ConnectAddrCallback) => {
-    const addr = await xxxx // addr 格式为 ip:port
-    callback(addr)
-}
+// LIMSDK.shared().config.provider.connectAddrCallback = async (callback: ConnectAddrCallback) => {
+//     const addr = await xxxx // addr 格式为 ip:port
+//     callback(addr)
+// }
 
 // 单机模式可以直接设置地址
-LIMSDK.shared().config.addr = "IP:PORT"
+LIMSDK.shared().config.addr = "IP:PORT" // 默认端口为2122
 // 认证信息
 LIMSDK.shared().config.uid = "xxxx"  // 用户uid（需要在狸猫通讯端注册过）
 LIMSDK.shared().config.token = "xxxx" // 用户token （需要在狸猫通讯端注册过）
@@ -89,10 +93,19 @@ LIMSDK.shared().config
 
 ```ts
 // 连接
-LIMSDK.shared().connect()
+LIMSDK.shared().connectManager.connect()
 
 // 断开
-LIMSDK.shared().disconnect()
+LIMSDK.shared().connectManager.disconnect()
+
+// 连接状态监听
+LIMSDK.shared().connectManager.addConnectStatusListener((status: ConnectStatus, reasonCode?: number)=>{
+  if (status === ConnectStatus.Connected) {
+    console.log("连接成功")
+  } else {
+    console.log("连接失败", reasonCode) //  reasonCode: 2表示认证失败（uid或token错误）
+  }
+})
 
 ```
 
@@ -108,12 +121,12 @@ LIMSDK.shared().disconnect()
   * @param setting  发送设置 比如：已读未读回执，端对端加密
   * @returns 完整消息对象
 */
-LIMSDK.shared().send(content: MessageContent, channel: Channel, setting?: Setting)
+LIMSDK.shared().chatManager.send(content: MessageContent, channel: Channel, setting?: Setting)
 
 // 例如发送文本消息hello给用户A
 
 const text = new MessageText("hello")
-LIMSDK.shared().send(text,new Channel("A",ChannelTypePerson))
+LIMSDK.shared().chatManager.send(text,new Channel("A",ChannelTypePerson))
 
 ```
 
@@ -121,7 +134,7 @@ LIMSDK.shared().send(text,new Channel("A",ChannelTypePerson))
 
 ```ts
 // 消息发送状态监听
-LIMSDK.shared().addMessageStatusListener((packet:SendackPacket)=>{
+LIMSDK.shared().chatManager.addMessageStatusListener((packet:SendackPacket)=>{
    console.log("消息clientSeq->",packet.clientSeq) // 客户端序号用来匹配对应的发送的消息
      if(packet.reasonCode === 1) { 
         // 发送成功
@@ -131,7 +144,7 @@ LIMSDK.shared().addMessageStatusListener((packet:SendackPacket)=>{
 })
 
 // 消息监听
-LIMSDK.shared().addMessageListener((message:Message)=>{
+LIMSDK.shared().chatManager.addMessageListener((message:Message)=>{
 
 })
 
@@ -170,7 +183,7 @@ LIMSDK.shared().config.provider.syncMessagesCallback = async(channel:Channel,opt
  const conversations = await LIMSDK.shared().conversationManager.sync({})
 
 // 同步频道的消息
- const messages = LIMSDK.shared().syncMessages(channel,opts)
+ const messages = LIMSDK.shared().chatManager.syncMessages(channel,opts)
 
 
 ```
@@ -180,7 +193,7 @@ LIMSDK.shared().config.provider.syncMessagesCallback = async(channel:Channel,opt
 ```ts
 
 // 监听最近会话数据
-LIMSDK.shared().addConversationListener((conversation: Conversation, action: ConversationAction)=>{
+LIMSDK.shared().conversationManager.addConversationListener((conversation: Conversation, action: ConversationAction)=>{
 
 })
 
