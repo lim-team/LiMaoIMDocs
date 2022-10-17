@@ -162,6 +162,8 @@ LIMSDK.shared().chatManager.addMessageListener((message:Message)=>{
 
 // 提供最近会话同步的数据源
 LIMSDK.shared().config.provider.syncConversationsCallback = async (): Promise<Array<Conversation>> => {
+
+  // 后端提供的获取最近会话列表的接口数据 然后构建成 Conversation对象数组返回
   let conversations = new Array<Conversation>();
   conversations = await request(...)
   return conversations
@@ -169,6 +171,8 @@ LIMSDK.shared().config.provider.syncConversationsCallback = async (): Promise<Ar
 
 // 提供频道内消息同步的数据源
 LIMSDK.shared().config.provider.syncMessagesCallback = async(channel:Channel,opts:SyncOptions):Promise<Array<Message>>=> {
+
+// 后端提供的获取某个频道的消息列表的接口数据，然后构建成Message对象数组返回 
   let messages = new Array<Message>();
   messages = await request(...)
   return messages
@@ -179,10 +183,10 @@ LIMSDK.shared().config.provider.syncMessagesCallback = async(channel:Channel,opt
 ###### 数据操作
 
 ```ts
-// 同步最近会话
+// 同步最近会话（会触发LIMSDK.shared().config.provider.syncConversationsCallback）
  const conversations = await LIMSDK.shared().conversationManager.sync({})
 
-// 同步频道的消息
+// 同步频道的消息（会触发LIMSDK.shared().config.provider.syncMessagesCallback）
  const messages = LIMSDK.shared().chatManager.syncMessages(channel,opts)
 
 
@@ -194,7 +198,8 @@ LIMSDK.shared().config.provider.syncMessagesCallback = async(channel:Channel,opt
 
 // 监听最近会话数据
 LIMSDK.shared().conversationManager.addConversationListener((conversation: Conversation, action: ConversationAction)=>{
-
+    // conversation：发送数据变化的最近会话对象
+    // action：变化行为 add：添加 update：更新
 })
 
 ```
